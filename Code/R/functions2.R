@@ -147,3 +147,31 @@ for (graph_size in graph_sizes){
 }
 }
 
+#####PLOT DISTRIBUTION NULL vs SBM 10 Graphs
+##10 Graphs, change this 
+null_alt_dist <- function(null, graph_sizes){
+i=0
+plots <- list() #new empty list
+for (graph_size in graph_sizes){
+    i=i+1
+    null_sbm_dataframe <- data.frame(scan_df=numeric(0), type_df=numeric(0))
+    null_filename = paste("scan_", null, "_", as.character(graph_size), ".csv", sep="")
+    scan_null = read.csv(null_filename)[[2]]
+    null_type = as.factor(rep(null, length(scan_null)))
+    temp_df <- data.frame(scan_df=scan_null, type_df=null_type)
+    null_sbm_dataframe<- rbind(null_sbm_dataframe, temp_df)
+    sbm_filename = paste("scan_sbm_", as.character(graph_size), ".csv", sep="")
+    scan_sbm = read.csv(sbm_filename)[[2]]
+    alternate_type = as.factor(rep("sbm", length(scan_sbm)))
+    temp_df <- data.frame(scan_df=scan_sbm, type_df=alternate_type)
+    null_sbm_dataframe<- rbind(null_sbm_dataframe, temp_df)
+    
+    graph_title = paste("Graph_size: ", as.character(graph_size))
+    
+    plots[[i]] <- ggplot(null_sbm_dataframe, aes(scan_df, fill = type_df)) +
+        geom_density(alpha = 0.2) + xlim(min(null_sbm_dataframe$scan_df), max(null_sbm_dataframe$scan_df)) + ggtitle(graph_title) 
+    
+}
+
+multiplot(plots[[1]], plots[[2]], plots[[3]], plots[[4]], plots[[5]], plots[[6]], plots[[7]], plots[[8]], plots[[9]], plots[[10]], cols=2)
+}

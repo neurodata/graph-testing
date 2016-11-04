@@ -1,0 +1,39 @@
+---
+title: "Null vs Alternate Distributions"
+author: "Zeinab Mousavi"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r render, echo = FALSE, eval = FALSE}
+require(rmarkdown)
+rm(list=ls()); 
+rmarkdown::render("null_alternate_distributions.Rmd") 
+```
+
+
+## Generate Null and Alternate Distributions for Varying Graph size
+```{r cc2}
+library(grid)
+library(gridExtra)
+source("multiplot.R")
+source("functions2.R")
+```
+
+###Null: ER_gnp Alternate: SBM
+```{r cc4}
+graph_sizes = seq(100, 1000, 100)
+null="er_gnp"
+null_alt_dist(null, graph_sizes)
+```
+
+###Null: ER_gnm Alternate: SBM
+```{r cc3}
+graph_sizes = seq(100, 1000, 100)
+null="er_gnm"
+null_alt_dist(null, graph_sizes)
+```
+
+
+
