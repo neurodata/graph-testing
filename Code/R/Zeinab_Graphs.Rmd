@@ -1,0 +1,45 @@
+---
+title: "Graph RMarkdown file."
+author: "Zeinab Mousavi"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r render, echo = FALSE, eval = FALSE}
+require(rmarkdown)
+rm(list=ls()); 
+rmarkdown::render("Zeinab_Graphs.Rmd") 
+```
+
+
+## Data Preparation 
+
+The data have been imported and set up in .... 
+
+
+```{r cc1}
+Sys.time()
+require("functions2.R")
+```
+
+# Normal distribution
+
+Here is code to plot a normal distribution 
+[link](www.google.com)
+
+```{r cc2}
+x <- rnorm(1e4)
+hist(x)
+```
+
+## Beta distribution 
+
+Here is soem code to plot a beta
+
+```{r cc3}
+y <- rbeta(1e4, shape1 = 2, shape2 = 1)
+hist(y)
+```
+
+
