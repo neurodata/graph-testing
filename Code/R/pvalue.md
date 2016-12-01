@@ -111,7 +111,7 @@ paste(" p_value (rich) =", as.character(p_value_rich_obs))
 ```
 
 ```
-## [1] " p_value (rich) = 0.997464683041452"
+## [1] " p_value (rich) = 1.0160638070666"
 ```
 
 ```r
@@ -119,7 +119,7 @@ paste(" p_value (scan) =", as.character(p_value_scan_obs))
 ```
 
 ```
-## [1] " p_value (scan) = 1.11320513638275"
+## [1] " p_value (scan) = 1.51057069711988"
 ```
 
 ```r
@@ -140,7 +140,7 @@ paste(" p_value (rich) =", as.character(p_value_rich_obs))
 ```
 
 ```
-## [1] " p_value (rich) = 0.975543274510142"
+## [1] " p_value (rich) = 1.0160638070666"
 ```
 
 ```r
@@ -148,7 +148,7 @@ paste(" p_value (scan) =", as.character(p_value_scan_obs))
 ```
 
 ```
-## [1] " p_value (scan) = 1.11320513638275"
+## [1] " p_value (scan) = 1.51057069711988"
 ```
 
 ```r
@@ -168,7 +168,7 @@ paste(" p_value (rich) =", as.character(p_value_rich_obs))
 ```
 
 ```
-## [1] " p_value (rich) = 0.975543274510142"
+## [1] " p_value (rich) = 1.0160638070666"
 ```
 
 ```r
@@ -176,7 +176,7 @@ paste(" p_value (scan) =", as.character(p_value_scan_obs))
 ```
 
 ```
-## [1] " p_value (scan) = 0.150655932432812"
+## [1] " p_value (scan) = 0.555707903906418"
 ```
 
 ```r
@@ -196,7 +196,7 @@ paste(" p_value (rich) =", as.character(p_value_rich_obs))
 ```
 
 ```
-## [1] " p_value (rich) = 0.997464683041452"
+## [1] " p_value (rich) = 0.889231934389893"
 ```
 
 ```r
@@ -204,7 +204,7 @@ paste(" p_value (scan) =", as.character(p_value_scan_obs))
 ```
 
 ```
-## [1] " p_value (scan) = 0.000373438720445531"
+## [1] " p_value (scan) = 0.000186419233790643"
 ```
 
 ```r
@@ -224,7 +224,7 @@ paste(" p_value (rich) =", as.character(p_value_rich_obs))
 ```
 
 ```
-## [1] " p_value (rich) = 0.375192401434678"
+## [1] " p_value (rich) = 0.37378898553819"
 ```
 
 ```r
@@ -259,7 +259,7 @@ paste(" p_value (rich) =", as.character(p_value_rich_obs))
 ```
 
 ```
-## [1] " p_value (rich) = 0.76398646725936"
+## [1] " p_value (rich) = 0.889231934389893"
 ```
 
 ```r
@@ -267,5 +267,5 @@ paste(" p_value (scan) =", as.character(p_value_scan_obs))
 ```
 
 ```
-## [1] " p_value (scan) = 7.89871828252642e-23"
+## [1] " p_value (scan) = 1.28897717005774e-16"
 ```

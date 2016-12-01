@@ -4,6 +4,7 @@ author: "Zeinab Mousavi"
 output: 
   html_document:
     keep_md: true
+    keep_tex: true
 ---
 
 ```{r render, echo = FALSE, eval = FALSE}
