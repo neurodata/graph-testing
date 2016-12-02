@@ -1,0 +1,33 @@
+---
+title       : Graph-Testing -- Lab Notebooks
+subtitle    : 
+author      : Zeinab Mousavi
+job         : 
+framework   : html5slides   # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : standalone # {standalone, draft}
+knit        : slidify::knit2slides #
+---
+
+```{r, echo=FALSE, eval=FALSE}
+require(slidify)
+require(rmarkdown)
+setwd("/Users/Zeinab/Desktop/graph-testing")
+render('index.Rmd')
+system('open index.html')
+```
+
+##  Examples
+The following are preliminary steps 
+[`graph-testing`](https://github.com/neurodata/graph-testing) on graph-testing.
+
+- [BootStrap1](https://docs.neurodata.io/graph-testing/Code/R/BootstrapHypTest.html)
+- [BootStrap2](https://docs.neurodata.io/graph-testing/Code/R/BootstrapHypTest2.html)
+
+- [Chernoff upper-bound p-value](https://docs.neurodata.io/graph-testing/Code/R/pvalue.html)
+- [Null-alt](https://docs.neurodata.io/graph-testing/Code/R/null_alternate_distributions.html)
+- [ER-gnm](https://docs.neurodata.io/graph-testing/Code/R/er_gnm_size_distributions.html)
+- [Test-power](https://docs.neurodata.io/graph-testing/Code/R/TestPower.html)
+
