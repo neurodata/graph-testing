@@ -20,14 +20,15 @@ system('open index.html')
 ```
 
 ##  Examples
-The following are preliminary steps 
+The following are experiments and results from 
 [`graph-testing`](https://github.com/neurodata/graph-testing) on graph-testing.
+
+- [Preliminary Work](https://docs.neurodata.io/graph-testing/Code/R/Preliminary.html)
+- [Chernoff upper-bound p-value](https://docs.neurodata.io/graph-testing/Code/R/pvalue.html)
 
 - [BootStrap1](https://docs.neurodata.io/graph-testing/Code/R/BootstrapHypTest.html)
 - [BootStrap2](https://docs.neurodata.io/graph-testing/Code/R/BootstrapHypTest2.html)
 
-- [Chernoff upper-bound p-value](https://docs.neurodata.io/graph-testing/Code/R/pvalue.html)
-- [Null-alt](https://docs.neurodata.io/graph-testing/Code/R/null_alternate_distributions.html)
-- [ER-gnm](https://docs.neurodata.io/graph-testing/Code/R/er_gnm_size_distributions.html)
-- [Test-power](https://docs.neurodata.io/graph-testing/Code/R/TestPower.html)
+
+
 
