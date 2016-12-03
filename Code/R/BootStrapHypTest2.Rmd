@@ -2,17 +2,28 @@
 title: "Bootstrap Hypothesis Test"
 author: "Zeinab Mousavi"
 output: 
-  html_document:
-  keep_md: true
+ html_document:
+   fig_caption: yes
+   fig_height: 5
+   fig_width: 5
+   highlight: pygments
+   keep_md: yes
+   number_sections: yes
+   theme: cerulean
+   toc: yes
+   toc_depth: 3
+  
 ---
   
   ```{r render, echo = FALSE, eval = FALSE}
+setwd("/Users/Zeinab/Desktop/R_network/GKTB")
 require(rmarkdown)
 rm(list=ls()); 
 rmarkdown::render("BootstrapHypTest2.Rmd") 
 ```
 
-
+#TITLE
+[google](www.google.com)
 
 ```{r cc1}
 
@@ -33,6 +44,7 @@ empirical.sd.Gauss <- sd
 #estimate from each sample
 
 boot.sampling.mean.Gauss<-matrix(1,boot_samples)
+
 
 #Now create "boot_sample" bootstrap samples and compute the value of the stat(mean) for each of them
 
@@ -58,6 +70,10 @@ alt_Gaussian_mean <-boot_Gaussian_mean(sample_size, mu=0.3, sd=1, boot_samples)
 
 #hist(null_Gaussian_mean,main="Boot Strap Estimate of sampling distribution of mean of Gaussian",breaks='Scott', prob=T, col="red", xlim=c(min(null_Gaussian_mu, alternate_Gaussian_mu), max(null_Gaussian_mu, alternate_Gaussian_mu)))
 #hist(alternate_Gaussian_mean,main="Boot Strap Estimate of sampling distribution of mean of Gaussian",breaks='Scott', prob=T, add=TRUE, col="purple")
+
+
+
+
 
 #Hypothesis Test
 #Ho: mu1=mu2
@@ -87,6 +103,12 @@ plots[[i]]<- ggplot(null_alt_dataframe, aes(mean_df, fill = type_df)) +  geom_de
 #print(plots)
 
 }
+
+```
+
+#TITLE 2
+```{r cc2}
+
 
 
 
