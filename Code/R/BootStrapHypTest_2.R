@@ -48,7 +48,7 @@ empirical.sd.Gauss.Obs <- sd_observed
 
 
 #Find critical value on null distribution, boot strap 
-boot_samples <- 10
+boot_samples <- 100
 mean_critical_boot <- rep(0,boot_samples)
 for (i in seq(1, boot_samples)){
 Null.Gauss.Boot <-rnorm(n=sample_size, mean=empirical.mean.Gauss.Null, sd=empirical.sd.Gauss.Null)
@@ -58,14 +58,15 @@ critical_boot <- mean(mean_critical_boot)
 }
 
 #Generate 1000 sample points from Gaussian & "boot_sample" bootstrap sample sets of size 100
-boot_samples <- 10000
-power<- rep(0,boot_samples)
+boot_samples <- 300
+power_test<- rep(0,boot_samples)
 for (i in seq(1, boot_samples)){
   Alt.Gauss.Boot <-rnorm(n=sample_size, mean=empirical.mean.Gauss.Obs, sd=empirical.sd.Gauss.Obs)
-  power[i] <- sum(Alt.Gauss.Boot[Alt.Gauss.Boot>critical_boot])/sum(abs(Alt.Gauss.Boot))
-  power <- mean(power)
+  print (i)
+  power_test[i] <- sum(Alt.Gauss.Boot[Alt.Gauss.Boot>critical_boot])/sum(abs(Alt.Gauss.Boot))
+  power_test_mean <- mean(power_test)
 }
-
+print (power_test_mean)
 #############################################
 #############################################
 #############################################
