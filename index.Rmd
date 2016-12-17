@@ -26,8 +26,9 @@ The following are experiments and results from
 - [Preliminary Work](https://docs.neurodata.io/graph-testing/Code/R/Preliminary.html)
 - [Chernoff upper-bound p-value](https://docs.neurodata.io/graph-testing/Code/R/pvalue.html)
 
-- [BootStrap1](https://docs.neurodata.io/graph-testing/Code/R/BootstrapHypTest.html)
-- [BootStrap2](https://docs.neurodata.io/graph-testing/Code/R/BootstrapHypTest2.html)
+- [BootStrap_Normal](https://docs.neurodata.io/graph-testing/Code/R/Norm_bootstrap.html)
+- [BootStrap_Normal_Attempt2](https://docs.neurodata.io/graph-testing/Code/R/Bootstrap_SingleGaussian.html)
+- [BootStrap_GMM](https://docs.neurodata.io/graph-testing/Code/R/GMM_bootstrap.html)
 
 
 
