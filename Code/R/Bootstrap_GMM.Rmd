@@ -1,0 +1,153 @@
+
+---
+title: "Bootstrap for testing equality of means."
+author: "Zeinab Mousavi"
+output: 
+  html_document:
+  keep_md: true
+  keep_tex: true
+---
+
+Bootstrap replications of a test statistic of interest for Hypothesis testing on GMMs. 
+
+###Description 
+Inputs $X$ and $Y$ are two independent observed random samples drawn from two unknown populations with probability distributions of $F$ and $G$, respectively. 
+For simplicity, we assume each population has a Gaussian Mixture Model distribution with variance 1. As a two-sample problem, we test the null hypothesis that
+
+Ho: $F=G$ via Helligner_distance(F, G) = 1 (test statistic)
+
+The bootstrap framework follows [BootStrap_SingleGaussian]('')
+
+###Inputs:
+$x_i \in R$ for $i \in {1, ..., n_{1}}$ observed samples from $F$
+
+$y_i \in R$ for $i \in {1, ..., n_{2}}$ observed samples from $G$
+
+###Assumptions:
+$F$ ~ $\pi * N(\mu_{1}, \sigma^{2}) + (1-\pi)* N(\mu_{2}, \sigma^{2})$
+
+$G$ ~ $\pi * N(\mu_{3}, \sigma^{2}) + (1-\pi)* N(\mu_{4}, \sigma^{2})$
+
+$\sigma^{2}$ = 1
+
+  
+```{r render, echo = FALSE, eval = FALSE}
+rm(list=ls()); 
+require(rmarkdown)
+setwd("/Users/zeinab/Desktop/R_Network/GKTB")
+rmarkdown::render("Bootstrap_GMM.Rmd") 
+```
+
+
+```{r setup}
+require(distrEx)
+require(mixtools)
+```
+
+``` {r functions}
+###HELLINGER DISTANCE####
+Hellinger_Dist <- function(d1, d2){
+  min_d1 = min(hist(d1, plot=FALSE)$breaks)
+  max_d1 = max(hist(d1, plot=FALSE)$breaks)
+  bin_width_d1 = mean(diff((hist(d1, plot=FALSE)$breaks)))
+  min_d2 = min(hist(d2, plot=FALSE)$breaks)
+  max_d2 = max(hist(d2, plot=FALSE)$breaks)
+  bin_width_d2 = mean(diff((hist(d2, plot=FALSE)$breaks)))
+  
+  bin_width = min(bin_width_d1, bin_width_d2)
+  min_break = min(min_d1, min_d2)
+  max_break = max(max_d1, max_d2)
+  h_breaks = seq(min_break, max_break, bin_width)
+  h1 = hist(d1, breaks=h_breaks, plot=FALSE)
+  h2 = hist(d2, breaks=h_breaks, plot=FALSE)
+  p<- h1$density * diff(h1$breaks)
+  q<- h2$density * diff(h2$breaks)
+  Dist <- 1/sqrt(2)*sqrt(sum((sqrt(p)-sqrt(q))^2))
+  return(Dist)
+}
+```
+
+Generate Sample Datasets
+
+```{r cc1}
+GMM_sd <- c(1, 1)
+GMM0_lambda <- c(0.3, 0.7)
+GMM0_mean <- c(1, 8)
+GMM1_lambda <-  c(0.3, 0.7)
+GMM1_mean <-  c(1.1, 8.1)
+
+k<-0 
+alpha = 0.05
+n <- seq(1000, 7000, 1000)
+
+
+power_boot <- c()
+
+for (n_sample in n){
+  ts_critical_null <- c()
+  p_value <- c()
+  #observed data
+  set.seed(1)
+  GMM_0 = rnormmix(n=n_sample, lambda=GMM0_lambda, mu=GMM0_mean, sigma=GMM_sd)
+  set.seed(1)
+  GMM_1 = rnormmix(n=n_sample, lambda=GMM1_lambda, mu=GMM1_mean, sigma=GMM_sd)
+  ts_data <- Hellinger_Dist(GMM_0, GMM_1)
+  
+  #Estimate Parameters of Eachdataset 
+  GMM_0_EM = normalmixEM(GMM_0, k=2, maxit=1000, sigma=c(1, 1)) 
+  GMM_0_lambda_estimate <- GMM_0_EM$lambda
+  GMM_0_mean_estimate <- GMM_0_EM$mu
+  
+  GMM_1_EM = normalmixEM(GMM_1, k=2, maxit=1000, sigma=c(1, 1)) 
+  GMM_1_lambda_estimate <- GMM_1_EM$lambda
+  GMM_1_mean_estimate <- GMM_1_EM$mu
+  
+  #Estimate Paramaters of Null Distribution 
+  GMM_null <- c(GMM_0, GMM_1)
+  GMM_null_EM = normalmixEM(GMM_null, k=2, maxit=1000, sigma=c(1, 1)) 
+  GMM_null_lambda_estimate <- GMM_null_EM$lambda
+  GMM_null_mean_estimate <- GMM_null_EM$mu
+  
+  #Now generate Bootstrap Samples
+
+  ts_null <- c()
+  ts_alt <- c()
+  boot_strap <-1000
+  for (b in seq(1, boot_strap, 1)){
+    #generate from parameter estiamtes 
+    set.seed(b)
+    GMM_0_boot <- rnormmix(n=n_sample, lambda=GMM_null_lambda_estimate, mu=GMM_null_mean_estimate, sigma=GMM_sd)
+    GMM_1_boot <- rnormmix(n=n_sample, lambda=GMM_null_lambda_estimate, mu=GMM_null_mean_estimate, sigma=GMM_sd)
+    
+    ts_null[b] <- Hellinger_Dist(GMM_1_boot, GMM_0_boot)
+  
+  }
+  
+  k <- k+1
+  ts_critical_null <- quantile(ts_null , 0.95)[[1]]
+  p_value[k] <- sum(ts_null>ts_data)/boot_strap
+
+  
+  #Alternate Distrbution Bootstrap
+  
+  
+  ts_null <- c()
+  ts_alt <- c()
+  boot_strap <-1000
+  for (b in seq(1, boot_strap, 1)){
+    #generate from parameter estiamtes 
+    set.seed(b)
+    GMM_0_boot_alt <- rnormmix(n=n_sample, lambda=GMM_0_lambda_estimate, mu=GMM_0_mean_estimate, sigma=GMM_sd)
+    GMM_1_boot_alt <- rnormmix(n=n_sample, lambda=GMM_1_lambda_estimate, mu=GMM_1_mean_estimate, sigma=GMM_sd)
+    ts_alt[b] <- Hellinger_Dist(GMM_1_boot_alt, GMM_0_boot_alt)
+  }
+
+power_boot[k] <- sum(ts_alt>ts_critical_null)/boot_strap 
+
+
+}
+```
+##Power Plot
+```{r cc2}
+plot(n, power_boot, type="b", col="blue", main = "Power of Test _ GMM")
+```
