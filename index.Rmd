@@ -28,6 +28,7 @@ The following are experiments and results from
 
 - [BootStrap_Normal](https://docs.neurodata.io/graph-testing/Code/R/Bootstrap_SingleGaussian.html)
 - [BootStrap_GMM](https://docs.neurodata.io/graph-testing/Code/R/Bootstrap_GMM.html)
+- [BootStrap_GRLT](https://docs.neurodata.io/graph-testing/Code/R/GRLT.html)
 
 
 
