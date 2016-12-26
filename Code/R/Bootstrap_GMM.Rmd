@@ -12,11 +12,13 @@ Bootstrap replications of a test statistic of interest for Hypothesis testing on
 
 ###Description 
 Inputs $X$ and $Y$ are two independent observed random samples drawn from two unknown populations with probability distributions of $F$ and $G$, respectively. 
-For simplicity, we assume each population has a Gaussian Mixture Model distribution with variance 1. As a two-sample problem, we test the null hypothesis that
+For simplicity, we assume each population has a Gaussian Mixture Model distribution with variance 1. As a two-sample problem, we test the hypothesis that
 
-Ho: $F=G$ via Helligner_distance(F, G) = 1 (test statistic)
+Ho: $F=G$ via Helligner_distance(F, G) = 0 (test statistic)
 
-The bootstrap framework follows [BootStrap_SingleGaussian]('')
+Ha: $F \neq G$ via Helligner_distance(F, G) > 0 (test statistic)
+
+The bootstrap framework follows [BootStrap_SingleGaussian](https://docs.neurodata.io/graph-testing/Code/R/Bootstrap_SingleGaussian.html)
 
 ###Inputs:
 $x_i \in R$ for $i \in {1, ..., n_{1}}$ observed samples from $F$
@@ -24,11 +26,84 @@ $x_i \in R$ for $i \in {1, ..., n_{1}}$ observed samples from $F$
 $y_i \in R$ for $i \in {1, ..., n_{2}}$ observed samples from $G$
 
 ###Assumptions:
-$F$ ~ $\pi * N(\mu_{1}, \sigma^{2}) + (1-\pi)* N(\mu_{2}, \sigma^{2})$
+$F$ ~ $\pi_x * N(\mu_{x_{1}}, \sigma^{2}) + (1-\pi_x)* N(\mu_{x_{2}}, \sigma^{2})$
 
-$G$ ~ $\pi * N(\mu_{3}, \sigma^{2}) + (1-\pi)* N(\mu_{4}, \sigma^{2})$
+$G$ ~ $\pi_y * N(\mu_{y_{1}}, \sigma^{2}) + (1-\pi_y)* N(\mu_{y_{2}}, \sigma^{2})$
 
 $\sigma^{2}$ = 1
+
+###Outputs:
+p-value for observed graph statistic, scalar
+
+power of the test, scalar 
+
+###Notation:
+
+Hellinger distance of P and Q is denoted as $\Delta(P, Q)$
+
+###Function:
+Evaluate parameters of observed datasets under the alternative distribution via Expectation Maximization algorithm (MLE)
+
+Fit to distribution under Ha
+
+1a. $\hat{\mu}_{x_{1}}, \hat{\mu}_{x_{2}},\hat{\pi}_{x},  = argmax (L({\mu}_{x_{1}}, {\mu}_{x_{2}},{\pi}_{x};X))$  
+
+1b. $\hat{\mu}_{y_{1}}, \hat{\mu}_{y_{2}},\hat{\pi}_{y},  = argmax (L({\mu}_{y_{1}}, {\mu}_{y_{2}},{\pi}_{y};Y))$ 
+
+Compute observed test statistic 
+
+2. $\hat\delta_{obs} = \Delta(X, Y)$
+
+Evaluate parameters of observed datasets under the null distribution via Expectation Maximization algorithm (MLE)
+
+Fit to distribution under Ho
+
+3a. $Z = [X, Y]$
+
+3b. $\hat{\mu}_{z_{1}}, \hat{\mu}_{z_{2}},\hat{\pi}_{z},  = argmax (L({\mu}_{z_{1}}, {\mu}_{z_{2}},{\pi}_{z};X))$  
+
+4. Construct bootstrap samples under the null hypothesis
+
+for b = {1, .., B}:
+
+  $\tilde{x}^{b}_{i}$ ~ $\hat\pi_z * N(\hat\mu_{z_{1}}, \sigma^{2}) + (1-\hat\pi_z)* N(\hat\mu_{z_{2}}, \sigma^{2})$ for $i \in {1, ..., n_{1}}$
+
+  $\tilde{y}^{b}_{i}$ ~ $\hat\pi_z * N(\hat\mu_{z_{1}}, \sigma^{2}) + (1-\hat\pi_z)* N(\hat\mu_{z_{2}}, \sigma^{2})$ for $i \in {1, ..., n_{2}}$
+
+  Evaluate test statistic on bootstrapped dataset
+
+  $\hat\delta^{b} = \Delta(\tilde{X}^{b}, \tilde{Y}^{b})$
+
+end 
+
+Compute p-value
+
+5. p-value = $\frac{count(\hat\delta^{b} \geq \hat\delta_{obs})}{B}$
+
+Find critical value for $\alpha$ = 0.05
+
+6. $\hat\delta_{c}$ = quantile $( \hat\delta^{b}, .95)$
+
+###Power of Test
+Construct bootstrap samples under the alternative hypothesis
+
+8. for b = {1, .., B}:
+
+  ${x}^{b}_{i}$ ~ $\hat\pi_x * N(\hat\mu_{x_{1}}, \sigma^{2}) + (1-\hat\pi_x)* N(\hat\mu_{x_{2}}, \sigma^{2})$ for $i \in {1, ..., n_{1}}$
+
+  ${y}^{b}_{i}$ ~ $\hat\pi_y * N(\hat\mu_{y_{1}}, \sigma^{2}) + (1-\hat\pi_y)* N(\hat\mu_{y_{2}}, \sigma^{2})$ for $i \in {1, ..., n_{2}}$
+
+  Evaluate test statistic on each bootstrapped dataset
+
+  $\hat\delta^{b} = \Delta({X}^{b}, {Y}^{b})$
+
+end 
+
+Compute Power
+
+9. Power = $\frac{count(\hat\delta^{b} \geq \hat\delta_{c})}{B}$
+
+
 
   
 ```{r render, echo = FALSE, eval = FALSE}
@@ -44,6 +119,7 @@ require(distrEx)
 require(mixtools)
 ```
 
+Function to evaluate Hellinger Distance 
 ``` {r functions}
 ###HELLINGER DISTANCE####
 Hellinger_Dist <- function(d1, d2){
@@ -66,10 +142,15 @@ Hellinger_Dist <- function(d1, d2){
   return(Dist)
 }
 ```
+###Simulations
 
-Generate Sample Datasets
+Two datasets, with size n, will be simulated by uniform sampling of two Gaussian Mixture Model distributions.
 
-```{r cc1}
+
+When the difference between the means of the two Gaussians is not zero, such as 0.1, we expect the Null Hypothesis to be rejected, p_value <0.05. We also expect the power of the test to inrease as sample size increases.
+
+
+```{r cc1, message=FALSE, warning=FALSE, results='hide'}
 GMM_sd <- c(1, 1)
 GMM0_lambda <- c(0.3, 0.7)
 GMM0_mean <- c(1, 8)

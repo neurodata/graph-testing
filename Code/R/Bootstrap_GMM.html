@@ -125,9 +125,10 @@ $(document).ready(function () {
 <p>Bootstrap replications of a test statistic of interest for Hypothesis testing on GMMs.</p>
 <div id="description" class="section level3">
 <h3>Description</h3>
-<p>Inputs <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are two independent observed random samples drawn from two unknown populations with probability distributions of <span class="math inline">\(F\)</span> and <span class="math inline">\(G\)</span>, respectively. For simplicity, we assume each population has a Gaussian Mixture Model distribution with variance 1. As a two-sample problem, we test the null hypothesis that</p>
-<p>Ho: <span class="math inline">\(F=G\)</span> via Helligner_distance(F, G) = 1 (test statistic)</p>
-<p>The bootstrap framework follows <a href="''">BootStrap_SingleGaussian</a></p>
+<p>Inputs <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are two independent observed random samples drawn from two unknown populations with probability distributions of <span class="math inline">\(F\)</span> and <span class="math inline">\(G\)</span>, respectively. For simplicity, we assume each population has a Gaussian Mixture Model distribution with variance 1. As a two-sample problem, we test the hypothesis that</p>
+<p>Ho: <span class="math inline">\(F=G\)</span> via Helligner_distance(F, G) = 0 (test statistic)</p>
+<p>Ha: <span class="math inline">\(F \neq G\)</span> via Helligner_distance(F, G) &gt; 0 (test statistic)</p>
+<p>The bootstrap framework follows <a href="https://docs.neurodata.io/graph-testing/Code/R/Bootstrap_SingleGaussian.html">BootStrap_SingleGaussian</a></p>
 </div>
 <div id="inputs" class="section level3">
 <h3>Inputs:</h3>
@@ -136,11 +137,69 @@ $(document).ready(function () {
 </div>
 <div id="assumptions" class="section level3">
 <h3>Assumptions:</h3>
-<p><span class="math inline">\(F\)</span> ~ <span class="math inline">\(\pi * N(\mu_{1}, \sigma^{2}) + (1-\pi)* N(\mu_{2}, \sigma^{2})\)</span></p>
-<p><span class="math inline">\(G\)</span> ~ <span class="math inline">\(\pi * N(\mu_{3}, \sigma^{2}) + (1-\pi)* N(\mu_{4}, \sigma^{2})\)</span></p>
+<p><span class="math inline">\(F\)</span> ~ <span class="math inline">\(\pi_x * N(\mu_{x_{1}}, \sigma^{2}) + (1-\pi_x)* N(\mu_{x_{2}}, \sigma^{2})\)</span></p>
+<p><span class="math inline">\(G\)</span> ~ <span class="math inline">\(\pi_y * N(\mu_{y_{1}}, \sigma^{2}) + (1-\pi_y)* N(\mu_{y_{2}}, \sigma^{2})\)</span></p>
 <p><span class="math inline">\(\sigma^{2}\)</span> = 1</p>
+</div>
+<div id="outputs" class="section level3">
+<h3>Outputs:</h3>
+<p>p-value for observed graph statistic, scalar</p>
+<p>power of the test, scalar</p>
+</div>
+<div id="notation" class="section level3">
+<h3>Notation:</h3>
+<p>Hellinger distance of P and Q is denoted as <span class="math inline">\(\Delta(P, Q)\)</span></p>
+</div>
+<div id="function" class="section level3">
+<h3>Function:</h3>
+<p>Evaluate parameters of observed datasets under the alternative distribution via Expectation Maximization algorithm (MLE)</p>
+<p>Fit to distribution under Ha</p>
+<p>1a. <span class="math inline">\(\hat{\mu}_{x_{1}}, \hat{\mu}_{x_{2}},\hat{\pi}_{x}, = argmax (L({\mu}_{x_{1}}, {\mu}_{x_{2}},{\pi}_{x};X))\)</span></p>
+<p>1b. <span class="math inline">\(\hat{\mu}_{y_{1}}, \hat{\mu}_{y_{2}},\hat{\pi}_{y}, = argmax (L({\mu}_{y_{1}}, {\mu}_{y_{2}},{\pi}_{y};Y))\)</span></p>
+<p>Compute observed test statistic</p>
+<ol start="2" style="list-style-type: decimal">
+<li><span class="math inline">\(\hat\delta_{obs} = \Delta(X, Y)\)</span></li>
+</ol>
+<p>Evaluate parameters of observed datasets under the null distribution via Expectation Maximization algorithm (MLE)</p>
+<p>Fit to distribution under Ho</p>
+<p>3a. <span class="math inline">\(Z = [X, Y]\)</span></p>
+<p>3b. <span class="math inline">\(\hat{\mu}_{z_{1}}, \hat{\mu}_{z_{2}},\hat{\pi}_{z}, = argmax (L({\mu}_{z_{1}}, {\mu}_{z_{2}},{\pi}_{z};X))\)</span></p>
+<ol start="4" style="list-style-type: decimal">
+<li>Construct bootstrap samples under the null hypothesis</li>
+</ol>
+<p>for b = {1, .., B}:</p>
+<p><span class="math inline">\(\tilde{x}^{b}_{i}\)</span> ~ <span class="math inline">\(\hat\pi_z * N(\hat\mu_{z_{1}}, \sigma^{2}) + (1-\hat\pi_z)* N(\hat\mu_{z_{2}}, \sigma^{2})\)</span> for <span class="math inline">\(i \in {1, ..., n_{1}}\)</span></p>
+<p><span class="math inline">\(\tilde{y}^{b}_{i}\)</span> ~ <span class="math inline">\(\hat\pi_z * N(\hat\mu_{z_{1}}, \sigma^{2}) + (1-\hat\pi_z)* N(\hat\mu_{z_{2}}, \sigma^{2})\)</span> for <span class="math inline">\(i \in {1, ..., n_{2}}\)</span></p>
+<p>Evaluate test statistic on bootstrapped dataset</p>
+<p><span class="math inline">\(\hat\delta^{b} = \Delta(\tilde{X}^{b}, \tilde{Y}^{b})\)</span></p>
+<p>end</p>
+<p>Compute p-value</p>
+<ol start="5" style="list-style-type: decimal">
+<li>p-value = <span class="math inline">\(\frac{count(\hat\delta^{b} \geq \hat\delta_{obs})}{B}\)</span></li>
+</ol>
+<p>Find critical value for <span class="math inline">\(\alpha\)</span> = 0.05</p>
+<ol start="6" style="list-style-type: decimal">
+<li><span class="math inline">\(\hat\delta_{c}\)</span> = quantile <span class="math inline">\(( \hat\delta^{b}, .95)\)</span></li>
+</ol>
+</div>
+<div id="power-of-test" class="section level3">
+<h3>Power of Test</h3>
+<p>Construct bootstrap samples under the alternative hypothesis</p>
+<ol start="8" style="list-style-type: decimal">
+<li>for b = {1, .., B}:</li>
+</ol>
+<p><span class="math inline">\({x}^{b}_{i}\)</span> ~ <span class="math inline">\(\hat\pi_x * N(\hat\mu_{x_{1}}, \sigma^{2}) + (1-\hat\pi_x)* N(\hat\mu_{x_{2}}, \sigma^{2})\)</span> for <span class="math inline">\(i \in {1, ..., n_{1}}\)</span></p>
+<p><span class="math inline">\({y}^{b}_{i}\)</span> ~ <span class="math inline">\(\hat\pi_y * N(\hat\mu_{y_{1}}, \sigma^{2}) + (1-\hat\pi_y)* N(\hat\mu_{y_{2}}, \sigma^{2})\)</span> for <span class="math inline">\(i \in {1, ..., n_{2}}\)</span></p>
+<p>Evaluate test statistic on each bootstrapped dataset</p>
+<p><span class="math inline">\(\hat\delta^{b} = \Delta({X}^{b}, {Y}^{b})\)</span></p>
+<p>end</p>
+<p>Compute Power</p>
+<ol start="9" style="list-style-type: decimal">
+<li>Power = <span class="math inline">\(\frac{count(\hat\delta^{b} \geq \hat\delta_{c})}{B}\)</span></li>
+</ol>
 <pre class="r"><code>require(distrEx)
 require(mixtools)</code></pre>
+<p>Function to evaluate Hellinger Distance</p>
 <pre class="r"><code>###HELLINGER DISTANCE####
 Hellinger_Dist &lt;- function(d1, d2){
   min_d1 = min(hist(d1, plot=FALSE)$breaks)
@@ -161,7 +220,11 @@ Hellinger_Dist &lt;- function(d1, d2){
   Dist &lt;- 1/sqrt(2)*sqrt(sum((sqrt(p)-sqrt(q))^2))
   return(Dist)
 }</code></pre>
-<p>Generate Sample Datasets</p>
+</div>
+<div id="simulations" class="section level3">
+<h3>Simulations</h3>
+<p>Two datasets, with size n, will be simulated by uninform sampling of two Gaussian Mixture Model distributions.</p>
+<p>When the difference between the means of the two Gaussians is not zero, such as 0.1, we expect the Null Hypothesis to be rejected, p_value &lt;0.05. We also expect the power of the test to inrease as sample size increases.</p>
 <pre class="r"><code>GMM_sd &lt;- c(1, 1)
 GMM0_lambda &lt;- c(0.3, 0.7)
 GMM0_mean &lt;- c(1, 8)
@@ -238,27 +301,6 @@ power_boot[k] &lt;- sum(ts_alt&gt;ts_critical_null)/boot_strap
 
 
 }</code></pre>
-<pre><code>## number of iterations= 5 
-## number of iterations= 5 
-## number of iterations= 8 
-## number of iterations= 7 
-## number of iterations= 4 
-## number of iterations= 7 
-## number of iterations= 6 
-## number of iterations= 5 
-## number of iterations= 11 
-## number of iterations= 5 
-## number of iterations= 6 
-## number of iterations= 7 
-## number of iterations= 5 
-## number of iterations= 6 
-## number of iterations= 7 
-## number of iterations= 4 
-## number of iterations= 7 
-## number of iterations= 5 
-## number of iterations= 6 
-## number of iterations= 5 
-## number of iterations= 7</code></pre>
 </div>
 <div id="power-plot" class="section level2">
 <h2>Power Plot</h2>
