@@ -1,6 +1,6 @@
 
 ---
-title: "Bootstrap for testing equality of means."
+title: "Bootstrap for testing similarity between two GMM's."
 author: "Zeinab Mousavi"
 output: 
   html_document:
