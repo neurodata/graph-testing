@@ -1,0 +1,178 @@
+
+---
+title: "Bootstrap for testing number of model parameters."
+author: "Zeinab Mousavi"
+output: 
+  html_document:
+  keep_md: true
+  keep_tex: true
+---
+
+
+Bootstrap implementation for evaluating goodness of fit of two models.
+
+###Description 
+
+Input $X$ are independent observed random samples drawn from an unknown population. We compare its goodness of fit under the null and alternative models:
+
+$X$ ~ $\sum_{k=1}^{k_{max}} \pi_{k} * N(\mu_{k}, \sigma^{2})$ s.t. $\sum_{k=1}^{k_{max}} \pi_{k} = 1$
+
+Ho: $k_{max} = k_{0}$
+
+Ha: $k_{max} = k_{1}$
+
+In this example, $k_{0} = 1$ and $k_{1} = 2$
+
+###Inputs:
+$x_i \in R$ for $i \in {1, ..., n}$ 
+
+###Assumptions:
+$\sigma^{2}$ = 1
+
+###Outputs:
+p-value for observed graph statistic, scalar
+
+power of the test, scalar 
+
+###Function:
+
+Evaluate parameter estimates of observed data under both models
+
+1a. $\hat{\mu}_{0} = \frac{1}{n}{\sum_{i=1}^{n}x_i}$
+
+1b. $\hat{\mu}_{1_{,1}}, \hat{\mu}_{1_{,2}},\hat{\pi}_{1} = argmax (L({\mu}_{1_{,1}}, {\mu}_{1_{,2}},{\pi}_{1};X))$
+
+Compute test statistic of observed data 
+
+2. $\delta_{data} = -2 * (ln(L(k_{0}|X)) - ln(L(k_{1}|X)))$
+
+Generate bootstrap samples and evaluate log likelihood ratio under the null model
+
+3. for b = {1, .., B}:
+
+Simulate
+
+${x}^{b}_{i}$ ~ $\sum_{k=1}^{k_{0}} \pi_{k} * N(\hat{\mu}_{0}, \sigma^{2})$ 
+
+Fit 
+
+$\hat{\mu}^{b}_{0} = \frac{1}{n}{\sum_{i=1}^{n}{x}^{b}_{i}}$
+
+$\hat{\mu}^{b}_{1_{,1}}, \hat{\mu}^{b}_{1_{,2}},\hat{\pi}^{b}_{1} = argmax (L({\mu}^{b}_{1_{,1}}, {\mu}^{b}_{1_{,2}},{\pi}_{1};X))$
+
+Evaluate
+
+$\hat\delta^{b} = -2 * (ln(L(k_{0}|X^{b})) - ln(L(k_{1}|X^{b})))$
+
+end 
+
+Compute p-value
+
+4. p-value = $\frac{count(\hat\delta^{b} \geq \hat\delta_{obs})}{B}$
+
+Find critical value for $\alpha$ = 0.05
+
+5. $\hat\delta_{c}$ = quantile $( \hat\delta^{b}, .95)$
+
+###Power of Test
+Construct bootstrap samples under the alternative model
+
+6. for b = {1, .., B}:
+
+Simulate
+
+${x}^{b}_{i}$ ~ $\sum_{k=1}^{k_{0}} \pi_{k} * N(\hat{\mu}_{1}, \sigma^{2})$ 
+
+Fit 
+
+$\hat{\mu}^{b}_{0} = \frac{1}{n}{\sum_{i=1}^{n}{x}^{b}_{i}}$
+
+$\hat{\mu}^{b}_{1_{,1}}, \hat{\mu}^{b}_{1_{,2}},\hat{\pi}^{b}_{1} = argmax (L({\mu}^{b}_{1_{,1}}, {\mu}^{b}_{1_{,2}},{\pi}_{1};X))$
+
+Evaluate
+
+$\hat\delta^{b} = -2 * (ln(L(k_{0}|X^{b})) - ln(L(k_{1}|X^{b})))$
+
+end 
+
+Compute Power
+
+9. Power = $\frac{count(\hat\delta^{b} \geq \hat\delta_{c})}{B}$
+
+
+```{r render, echo = FALSE, eval = FALSE}
+rm(list=ls()); 
+require(rmarkdown)
+setwd("/Users/zeinab/Desktop/R_Network/GKTB")
+rmarkdown::render("GRLT.Rmd") 
+```
+
+```{r setup}
+require(mixtools)
+require(mclust)
+```
+
+###Simulations
+
+On dataset of size n is simulated by equally uniform sampling of two Gaussian distributions.
+
+
+When the difference between the means of the two Gaussians is not zero, such as 0.5, we expect the Null Hypothesis to be rejected, p_value <0.05. We also expect the power of the test to inrease as sample size increases.
+
+
+```{r cc1, message=FALSE, warning=FALSE, results='hide'}
+
+
+sample.size = c(seq(1000, 2000, 200), seq(2500, 3500, 500))
+
+p_value <- c()
+power <- c()
+k <- 0 
+for (n.sample in sample.size){
+
+set.seed(1)  
+X.data = c(rnorm(n=n.sample, mean=0, sd =1), rnorm(n=n.sample, mean=0.5, sd =1))
+
+
+data.mean.null <- mean(X.data)
+data.loglik.null = sum(log(dnorm(X.data,mean=data.mean.null,sd=1))) 
+data.fit.alt = normalmixEM(X.data,k=2)
+data.loglik.alt = data.fit.alt$loglik
+data.mean.alt = data.fit.alt$mu
+data.lambda.alt = data.fit.alt$lambda
+data.stat = - 2 * (data.loglik.null - data.loglik.alt)
+
+
+boot_strap <- 100
+test.stat.null <- c()
+test.stat.alt <- c()
+
+for (b in seq(1, boot_strap)){
+  
+  X.boot.null <- rnorm(length(X.data), mean=data.mean.null, sd=1)
+  loglik.null = sum(log(dnorm(X.boot.null,mean=mean(X.boot.null),sd=1))) 
+  loglik.alt = normalmixEM(X.boot.null,k=2)$loglik
+  test.stat.null[b] = - 2 * (loglik.null - loglik.alt)
+}
+
+k <- k+1
+p_value[k] = sum(data.stat<test.stat.null)/boot_strap #== 1-ecdf(test.stat.null)(data.stat)
+critical.stat = quantile(test.stat.null, 0.95)[1]
+
+print (p_value[k])
+
+for  (b in seq(1, boot_strap)){
+  X.boot.alt = rnormmix(n=n.sample, lambda=data.lambda.alt, mu=data.mean.alt, sigma=1)
+  loglik.null = sum(log(dnorm(X.boot.alt,mean=mean(X.boot.alt),sd=1))) 
+  loglik.alt = normalmixEM(X.boot.alt,k=2)$loglik
+  test.stat.alt[b] =  - 2 * (loglik.null - loglik.alt)
+}
+
+power[k]  = sum(critical.stat<test.stat.alt)/boot_strap #== 1-ecdf(test.stat.alt)(data.stat)
+
+print (power[k])
+
+}
+
+plot(sample.size, power, type="b")
+```
