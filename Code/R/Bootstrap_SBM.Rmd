@@ -1,0 +1,211 @@
+
+---
+title: "Bootstrap for testing block model of SBM."
+author: "Zeinab Mousavi"
+output: 
+  html_document:
+  keep_md: true
+keep_tex: true
+---
+  
+  
+Bootstrap implementation for evaluating goodness of fit of two SBM models.
+
+###Description 
+
+Input $A$ is a SBM graph. We compare its goodness of fit under the null and alternative models, where the number of blocks are 2 and 3 respectively:
+  
+$A$ is defined by $\theta(\tau, B, k)$ , where $A_{i,j}$ ~ $Bern(B_{i,j})$
+
+$\tau_{i}$ is vector indicating group index of vertex i ($\tau$ is nx1 vector)
+
+k is number of blocks/groups in the graph
+
+The likelihood is: $l = \displaystyle\prod_{i,j}^{n} B_{i,j}^{A_{i,j}}*{(1-B_{i,j})}^{(1-A_{i,j})}$  
+
+And log-likelihood: $loglik = \displaystyle\sum_{i,j}^{n} (A_{i,j}*log(B_{i,j})+(1-A_{i,j})*log(1-B_{i,j}))$
+
+Evaluate parameter estimates of observed data under both models
+
+fit $(A_{data}, k_{null})$ via k-means :: $\hat{A_{null}} = \theta(\hat{\tau_{null}}, \hat{B_{null}}, \hat{k_{null}})$ 
+
+fit $(A_{data}, k_{alt})$ via k-means :: $\hat{A_{alt}} = \theta(\hat{\tau_{alt}}, \hat{B_{alt}}, \hat{k_{alt}})$ 
+
+Compute test statistic of observed data 
+
+$\delta_{data} = -2 * (loglik(\hat{A_{null}}) - loglik(\hat{A_{alt}}))$
+
+#####GLRT Test
+
+for b in (1, .., B):
+
+Simulate under null hypothesis:
+
+$A^{b}$ ~  $\theta(\hat{\tau_{null}}, \hat{B_{null}}, k=k_{null})$
+
+Fit to both models:
+
+$A_{null}^{b}$ ~ fit $(A^{b}, k_{null})$ via k-means
+
+$A_{alt}^{b}$ ~ fit $(A^{b}, k_{alt})$ via k-means
+
+$\hat\delta^{b} = -2 * (loglik(A_{null}^{b}) - loglik(A_{alt}^{b}))$
+
+end 
+
+p-value = $\frac{count(\hat\delta^{b} \geq \hat\delta_{obs})}{B}$
+
+$\hat\delta_{c}$ = quantile $( \hat\delta^{b}, .95)$
+
+#####Power of Test
+Construct bootstrap samples under the alternative model
+
+for b = {1, .., B}:
+
+Simulate under alternative hypothesis:
+
+$A^{b}$ ~  $\theta(\hat{\tau_{alt}}, \hat{B_{alt}}, k=k_{alt})$
+
+Fit to both models:
+
+$A_{null}^{b}$ ~ fit $(A^{b}, k_{null})$ via k-means
+
+$A_{alt}^{b}$ ~ fit $(A^{b}, k_{alt})$ via k-means
+
+$\hat\delta^{b} = -2 * (loglik(A_{null}^{b}) - loglik(A_{alt}^{b}))$
+
+Power = $\frac{count(\hat\delta^{b} \geq \hat\delta_{c})}{B}$
+
+
+
+```{r render, echo = FALSE, eval = FALSE}
+rm(list=ls()); 
+require(rmarkdown)
+setwd("/Users/zeinab/Desktop/R_Network/GKTB")
+rmarkdown::render("Bootstrap_SBM.Rmd") 
+```
+
+#SBM 2 blocks vs 3 blocks 
+```{r setup}
+require(igraph)
+require(raster)
+####################################
+##FUNCTIONS#########################
+####################################
+sbm.sim <- function(A, k){
+  
+  A_kmeans <- kmeans(A[, 1:n], k, nstart = 20)
+  
+  log.b = c()
+  B.fit = matrix( , nrow = k, ncol = k)
+  for (i in seq(1, k, 1)){
+    for (j in seq(1, k, 1)){
+      if (i<=j){#SBM is symmetric, reduce computation
+        B.fit[i, j] = mean(A[(A_kmeans$cluster==i), (A_kmeans$cluster==j)])
+      }
+      else {
+        B.fit[i,j] = B.fit[j, i]
+      }
+    }
+  }
+  
+  block.sizes.fit = A_kmeans$size
+  list(block.sizes.est = block.sizes.fit, B.est =B.fit)
+}
+
+
+sbm.loglik = function(A, k){
+  A_kmeans <- kmeans(A[, 1:n], k, nstart = 20)
+  
+  log.b = c()
+  
+  for (i in seq(1, k, 1)){
+    for (j in seq(1, k, 1)){
+      if (i<=j){#SBM is symmetric, reduce computation
+        b_ij = mean(A[(A_kmeans$cluster==i), (A_kmeans$cluster==j)])
+        log.b_ij = sum(A[(A_kmeans$cluster==i), (A_kmeans$cluster==j)])*log(b_ij) + (A_kmeans$size[i]*A_kmeans$size[j]-sum(A[(A_kmeans$cluster==i), (A_kmeans$cluster==j)]))*log(1-b_ij)
+        if (i!=j){ #take advantage of SBM symmetry
+          log.b_ij = 2*log.b_ij
+        }
+        log.b = sum(log.b, log.b_ij)
+      }
+    }
+  }
+  
+  return(log.b)
+}
+```
+
+```{r cc1} 
+k_null =2
+k_alt = 3
+graph_size = seq(160, 400, 20)
+#graph_size = c(280)
+
+
+p_value <- c()
+power = c()
+ctr = 0 
+for (n in graph_size){
+m = ceiling(n/3)
+###DATA
+
+
+#3block 
+p<-0.55
+q<-0.35
+r<-0.4
+block_sizes = c((n-2*m), m, m)
+pm <- cbind( c(p, q, r), c(q, p, q) , c(r, q, p))
+
+
+g.data <- sbm.game(sum(block_sizes), pref.matrix=pm, block.sizes=block_sizes, directed=FALSE,loops=FALSE)
+A.data = as.matrix(get.adjacency(g.data))
+if (ctr %% 5 ==0){ 
+  title = paste("graph_size: ", as.character(n), "x", as.character(n), sep="")
+  plot(raster(A.data), main=title)
+}
+#####
+
+A.param.null <- sbm.sim(A.data,k_null)
+A.param.alt <- sbm.sim(A.data,k_alt)
+
+data.loglik.null <- sbm.loglik(A.data, 2)
+data.loglik.alt <- sbm.loglik(A.data, 3)
+data.stat = - 2 * (data.loglik.null - data.loglik.alt)
+
+
+boot_strap <- 100
+test.stat.null <- c()
+test.stat.alt <- c()
+
+
+for (b in seq(1, boot_strap)){
+
+A.boot.null.sim <- sbm.game(sum(A.param.null$block.sizes.est), pref.matrix=A.param.null$B.est, block.sizes=A.param.null$block.sizes.est, directed=FALSE,loops=FALSE)
+A.boot.null <- as.matrix(get.adjacency(A.boot.null.sim))
+
+loglik.null <- sbm.loglik(A.boot.null, k_null)
+loglik.alt <- sbm.loglik(A.boot.null, k_alt)
+test.stat.null[b] = - 2 * (loglik.null - loglik.alt)
+}
+
+ctr = ctr+1
+p_value[ctr] = sum(data.stat<test.stat.null)/boot_strap #== 1-ecdf(test.stat.null)(data.stat)
+critical.stat = quantile(test.stat.null, 0.95)[1]
+
+for (b in seq(1, boot_strap)){
+  A.boot.alt.sim <- sbm.game(sum(A.param.alt$block.sizes.est), pref.matrix=A.param.alt$B.est, block.sizes=A.param.alt$block.sizes.est, directed=FALSE,loops=FALSE)
+  A.boot.alt <- as.matrix(get.adjacency(A.boot.alt.sim))
+  
+  loglik.null <- sbm.loglik(A.boot.alt, k_null)
+  loglik.alt <- sbm.loglik(A.boot.alt, k_alt)
+  test.stat.alt[b] = - 2 * (loglik.null - loglik.alt)
+}
+
+power[ctr]= sum(critical.stat<test.stat.alt)/boot_strap 
+
+}
+
+plot(graph_size, power, type="l")
+```
