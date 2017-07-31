@@ -59,3 +59,4 @@ to determine whether there is more clustering of the "high degree
 
 
 
+# CovariateError
